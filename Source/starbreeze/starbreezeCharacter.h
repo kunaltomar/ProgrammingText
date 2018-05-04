@@ -8,6 +8,16 @@
 
 #define TRACE_WEAPON ECC_GameTraceChannel1
 
+UENUM(BlueprintType)
+namespace EWeaponProjectile
+{
+	enum ProjectileType
+	{
+		EBullet			UMETA(DisplayName = "Bullet"),
+		ESpread			UMETA(DisplayName = "Spread"),											// Multiple types of bullet can be add further and firing mechanism can be customized
+	};
+}
+
 class UInputComponent;
 
 UCLASS(config=Game)
@@ -39,21 +49,23 @@ class AstarbreezeCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UMotionControllerComponent* L_MotionController;
 
-	UPROPERTY(EditAnywhere, Category = Ammo)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Ammo)
 		int32 MaxAmmo;
 
-	UPROPERTY(EditAnywhere, Category = Config)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Config)
 		float TimeBetweenShots;
 
-	UPROPERTY(EditAnywhere, Category = Ammo)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Ammo)
 		int32 ShotCost;
 
-	UPROPERTY(EditAnywhere, Category = Config)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Config)
 		float WeaponRange;
 
-	UPROPERTY(EditAnywhere, Category = Config)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Config)
 		float WeaponSpread;
 
+	UPROPERTY(EditDefaultsOnly, Category = Config)
+		TEnumAsByte<EWeaponProjectile::ProjectileType> Projectiletype;
 public:
 	AstarbreezeCharacter();
 

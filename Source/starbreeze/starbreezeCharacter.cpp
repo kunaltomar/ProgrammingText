@@ -56,7 +56,7 @@ AstarbreezeCharacter::AstarbreezeCharacter()
 
 	// Default offset from the character location for projectiles to spawn
 	GunOffset = FVector(100.0f, 0.0f, 10.0f);
-	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+	
 }
 
 void AstarbreezeCharacter::BeginPlay()
@@ -66,7 +66,7 @@ void AstarbreezeCharacter::BeginPlay()
 
 	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
 	
-
+	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -106,11 +106,20 @@ void AstarbreezeCharacter::OnFire()
 {
 	
 	//DrawDebugLine(GetWorld(), FP_MuzzleLocation->GetComponentLocation(), (FP_MuzzleLocation->GetForwardVector() * 10000.f) + FP_MuzzleLocation->GetComponentLocation(), FColor(255, 0, 0), false, -1, 0, 5);
-
-	for (int32 i = 0; i <= WeaponSpread; i++)
+	if (Projectiletype == EWeaponProjectile::EBullet)
 	{
 		Instant_Fire();
+
 	}
+	if (Projectiletype == EWeaponProjectile::ESpread)
+	{
+		for (int32 i = 0; i <= WeaponSpread; i++)
+		{
+			Instant_Fire();
+		}
+	}
+
+	
 
 	// try and play the sound if specified
 	if (FireSound != NULL)
