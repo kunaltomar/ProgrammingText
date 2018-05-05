@@ -57,16 +57,21 @@ AstarbreezeCharacter::AstarbreezeCharacter()
 	// Default offset from the character location for projectiles to spawn
 	GunOffset = FVector(100.0f, 0.0f, 10.0f);
 	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+	
+	//MyCharacterMovement = GetCharacterMovement();
+// 	MyCharacterMovement->CrouchedHalfHeight = CrouchingHeight;
+// 	
+	
+	
 }
 
 void AstarbreezeCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
+	//MyCharacterMovement->MaxWalkSpeedCrouched = 50.f;
 	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
 	
-
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -80,6 +85,8 @@ void AstarbreezeCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	// Bind jump events
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AstarbreezeCharacter::OnBeginCrouch);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AstarbreezeCharacter::OnStopCrouch);
 
 	// Bind fire event
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AstarbreezeCharacter::OnFire);
@@ -132,6 +139,7 @@ void AstarbreezeCharacter::OnFire()
 
 void AstarbreezeCharacter::Instant_Fire()
 {
+	
 	const int32 RandomSeed = FMath::Rand();
 	FRandomStream WeaponRandomStream(RandomSeed);
 	const float CurrentSpread = WeaponSpread;
@@ -144,6 +152,20 @@ void AstarbreezeCharacter::Instant_Fire()
 	ProcessInstantHit(Impact, StartTrace, ShootDir, RandomSeed, CurrentSpread);
 }
 
+void AstarbreezeCharacter::OnBeginCrouch()
+{
+	//MyCharacterMovement->bWantsToCrouch=true;
+	//MyCharacterMovement->Crouch(true);
+	
+}
+
+void AstarbreezeCharacter::OnStopCrouch()
+{
+	
+//	MyCharacterMovement->UnCrouch(true);
+	
+}
+
 FHitResult AstarbreezeCharacter::WeaponTrace(const FVector & TraceFrom, const FVector & TraceTo) const
 {
 	static FName WeaponFireTag = FName(TEXT("WeaponTrace"));
@@ -154,10 +176,12 @@ FHitResult AstarbreezeCharacter::WeaponTrace(const FVector & TraceFrom, const FV
 	FHitResult Hit(ForceInit);  // To Reintialize every time 
 	GetWorld()->LineTraceSingleByChannel(Hit, TraceFrom, TraceTo, TRACE_WEAPON, TraceParams);
 	return Hit;
+
 }
 
 void AstarbreezeCharacter::ProcessInstantHit(const FHitResult & Impact, const FVector & Origin, const FVector & ShootDir, int32 RandomSeed, float ReticleSpread)
 {
+	
 	const FVector EndTrace = Origin + ShootDir * WeaponRange;
 	const FVector EndPoint = Impact.GetActor() ? Impact.ImpactPoint : EndTrace;
 	DrawDebugLine(this->GetWorld(), Origin, Impact.TraceEnd, FColor::Black, true, 0.5, 10.f);
@@ -169,10 +193,9 @@ void AstarbreezeCharacter::ProcessInstantHit(const FHitResult & Impact, const FV
 		if (Impact.Component->IsSimulatingPhysics())
 		{
 			FVector dir = FVector(FP_MuzzleLocation->GetForwardVector());
-			float mag = (Impact.TraceEnd - Impact.TraceStart).Size();
-			Impact.Component->AddImpulseAtLocation(ImpulseStrength* dir, Impact.ImpactPoint);
-			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::SanitizeFloat(mag));
-			
+			//float mag = (Impact.TraceEnd - Impact.TraceStart).Size();
+			Impact.Component->AddImpulse(ImpulseStrength* dir * Impact.Component->GetMass());
+						
 		}
 	}
 }

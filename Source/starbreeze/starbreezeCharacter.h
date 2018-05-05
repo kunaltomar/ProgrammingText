@@ -39,10 +39,12 @@ class AstarbreezeCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UMotionControllerComponent* L_MotionController;
 
-
+	UCharacterMovementComponent* MyCharacterMovement;
 
 public:
 	
+	
+
 	UPROPERTY(EditAnywhere, Category = WeaponConfig)
 		float WeaponRange;
 
@@ -52,6 +54,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = WeaponConfig)
 		float ImpulseStrength;
 
+	
 	AstarbreezeCharacter();
 
 protected:
@@ -91,6 +94,11 @@ protected:
 	/** Fires a projectile. */
 	void OnFire();
 	void Instant_Fire();
+
+	// Crouch
+
+	void OnBeginCrouch();
+	void OnStopCrouch();
 	/** Resets HMD orientation and position in VR. */
 	void OnResetVR();
 
