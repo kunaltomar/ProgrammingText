@@ -141,9 +141,7 @@ void AstarbreezeCharacter::Instant_Fire()
 	const FVector ShootDir = WeaponRandomStream.VRandCone(AimDir, SpreadCone);
 	const FVector EndTrace = StartTrace + ShootDir * WeaponRange;
 	const FHitResult Impact = WeaponTrace(StartTrace, EndTrace);
-
 	ProcessInstantHit(Impact, StartTrace, ShootDir, RandomSeed, CurrentSpread);
-	
 }
 
 FHitResult AstarbreezeCharacter::WeaponTrace(const FVector & TraceFrom, const FVector & TraceTo) const
@@ -153,12 +151,8 @@ FHitResult AstarbreezeCharacter::WeaponTrace(const FVector & TraceFrom, const FV
 	TraceParams.bTraceAsyncScene = true;
 	TraceParams.bReturnPhysicalMaterial = true;
 	TraceParams.AddIgnoredActor(this);
-	
-
 	FHitResult Hit(ForceInit);  // To Reintialize every time 
 	GetWorld()->LineTraceSingleByChannel(Hit, TraceFrom, TraceTo, TRACE_WEAPON, TraceParams);
-	
-	
 	return Hit;
 }
 
@@ -166,8 +160,21 @@ void AstarbreezeCharacter::ProcessInstantHit(const FHitResult & Impact, const FV
 {
 	const FVector EndTrace = Origin + ShootDir * WeaponRange;
 	const FVector EndPoint = Impact.GetActor() ? Impact.ImpactPoint : EndTrace;
-	DrawDebugLine(this->GetWorld(), Origin, Impact.TraceEnd, FColor::Black, true, 10000, 10.f);
-
+	DrawDebugLine(this->GetWorld(), Origin, Impact.TraceEnd, FColor::Black, true, 0.5, 10.f);
+	DrawDebugPoint(this->GetWorld(), Impact.ImpactPoint,5, FColor::Red, false, 1);
+	
+	FVector Impulse;
+	if (Impact.bBlockingHit)
+	{
+		if (Impact.Component->IsSimulatingPhysics())
+		{
+			FVector dir = FVector(FP_MuzzleLocation->GetForwardVector());
+			float mag = (Impact.TraceEnd - Impact.TraceStart).Size();
+			Impact.Component->AddImpulseAtLocation(ImpulseStrength* dir, Impact.ImpactPoint);
+			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::SanitizeFloat(mag));
+			
+		}
+	}
 }
 
 void AstarbreezeCharacter::OnResetVR()

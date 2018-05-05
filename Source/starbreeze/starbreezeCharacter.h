@@ -39,22 +39,19 @@ class AstarbreezeCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UMotionControllerComponent* L_MotionController;
 
-	UPROPERTY(EditAnywhere, Category = Ammo)
-		int32 MaxAmmo;
 
-	UPROPERTY(EditAnywhere, Category = Config)
-		float TimeBetweenShots;
-
-	UPROPERTY(EditAnywhere, Category = Ammo)
-		int32 ShotCost;
-
-	UPROPERTY(EditAnywhere, Category = Config)
-		float WeaponRange;
-
-	UPROPERTY(EditAnywhere, Category = Config)
-		float WeaponSpread;
 
 public:
+	
+	UPROPERTY(EditAnywhere, Category = WeaponConfig)
+		float WeaponRange;
+
+	UPROPERTY(EditAnywhere, Category = WeaponConfig)
+		float WeaponSpread;
+
+	UPROPERTY(EditAnywhere, Category = WeaponConfig)
+		float ImpulseStrength;
+
 	AstarbreezeCharacter();
 
 protected:
