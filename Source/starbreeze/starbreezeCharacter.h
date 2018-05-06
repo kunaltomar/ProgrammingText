@@ -41,6 +41,8 @@ class AstarbreezeCharacter : public ACharacter
 
 	UCharacterMovementComponent* MyCharacterMovement;
 
+	float DamageAmount;
+
 public:
 	
 	
@@ -49,13 +51,20 @@ public:
 		float WeaponRange;
 
 	UPROPERTY(EditAnywhere, Category = WeaponConfig)
+		float ShellCount;
+
+	UPROPERTY(EditAnywhere, Category = WeaponConfig)
 		float WeaponSpread;
 
 	UPROPERTY(EditAnywhere, Category = WeaponConfig)
 		float ImpulseStrength;
 
-	
-	AstarbreezeCharacter();
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+		int32 KillCount;
+
+		AstarbreezeCharacter();
+
+		void UpdateScore();
 
 protected:
 	virtual void BeginPlay();
@@ -89,16 +98,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	uint32 bUsingMotionControllers : 1;
 
+	UFUNCTION(BlueprintImplementableEvent, Category = Gameplay)
+	void DisplayDamage(float DamageAmount);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = Gameplay)
+		void DisplayScore(int32 score);
+
 protected:
 	
 	/** Fires a projectile. */
 	void OnFire();
 	void Instant_Fire();
 
-	// Crouch
-
-	void OnBeginCrouch();
-	void OnStopCrouch();
 	/** Resets HMD orientation and position in VR. */
 	void OnResetVR();
 
