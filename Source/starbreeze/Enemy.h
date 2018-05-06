@@ -11,11 +11,11 @@ class STARBREEZE_API AEnemy : public ACharacter
 {
 	GENERATED_BODY()
 
-
 		
 public:
 	
 	bool isDead;
+
 
 	UPROPERTY(EditAnywhere, Category = Mesh)
 		USkeletalMeshComponent* SK_Mesh;
@@ -23,6 +23,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = CapsuleComp)
 		UCapsuleComponent* SK_CapsuleComp;
 	// Sets default values for this character's properties
+
+	UPROPERTY(EditAnywhere, Category = AISystem)
+		class UBehaviorTree *EnemyBehaviour;
+
 	AEnemy();
 
 protected:

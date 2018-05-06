@@ -185,7 +185,7 @@ void AstarbreezeCharacter::ProcessInstantHit(const FHitResult & Impact, const FV
 	
 	const FVector EndTrace = Origin + ShootDir * WeaponRange;
 	const FVector EndPoint = Impact.GetActor() ? Impact.ImpactPoint : EndTrace;
-	DrawDebugLine(this->GetWorld(), Origin, Impact.TraceEnd, FColor::Black, true, 1000, 0.25);
+	DrawDebugLine(this->GetWorld(), Origin, Impact.TraceEnd, FColor::Black, true, 0.25, 0.25);
 	DrawDebugPoint(this->GetWorld(), Impact.ImpactPoint,5, FColor::Red, false, 0.25);
 	
 	FVector Impulse;

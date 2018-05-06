@@ -21,6 +21,8 @@ AEnemy::AEnemy()
 
 	Health = 100.f;
 	isDead = false;
+
+	//EnemyAIPerception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("EnemyAIPerception"));
 }
 
 // Called when the game starts or when spawned
