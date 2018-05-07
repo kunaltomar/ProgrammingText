@@ -10,6 +10,7 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine.h"
+#include "Enemy.h"
 #include "MotionControllerComponent.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
 
@@ -56,17 +57,31 @@ AstarbreezeCharacter::AstarbreezeCharacter()
 
 	// Default offset from the character location for projectiles to spawn
 	GunOffset = FVector(100.0f, 0.0f, 10.0f);
+	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
 	
+	//MyCharacterMovement = GetCharacterMovement();
+// 	MyCharacterMovement->CrouchedHalfHeight = CrouchingHeight;
+// 	
+	Health = 100;
+	KillCount = 0;
+
+	WeaponRange = 1000;
+	ShellCount = 8;
+	WeaponSpread = 0.5;
+	ImpulseStrength = 100;
+	DamageAmount = 0.f;
+	isDead = false;
 }
+
 
 void AstarbreezeCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
+	
+	//MyCharacterMovement->MaxWalkSpeedCrouched = 50.f;
 	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
 	
-	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -80,10 +95,10 @@ void AstarbreezeCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	// Bind jump events
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-
+	
 	// Bind fire event
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AstarbreezeCharacter::OnFire);
-
+	
 	// Enable touchscreen input
 	EnableTouchscreenMovement(PlayerInputComponent);
 
@@ -102,25 +117,21 @@ void AstarbreezeCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AstarbreezeCharacter::LookUpAtRate);
 }
 
+
+
 void AstarbreezeCharacter::OnFire()
 {
 	
 	//DrawDebugLine(GetWorld(), FP_MuzzleLocation->GetComponentLocation(), (FP_MuzzleLocation->GetForwardVector() * 10000.f) + FP_MuzzleLocation->GetComponentLocation(), FColor(255, 0, 0), false, -1, 0, 5);
-	if (Projectiletype == EWeaponProjectile::EBullet)
+
+	for (int32 i = 0; i <= ShellCount; i++)
 	{
 		Instant_Fire();
-
-	}
-	if (Projectiletype == EWeaponProjectile::ESpread)
-	{
-		for (int32 i = 0; i <= WeaponSpread; i++)
-		{
-			Instant_Fire();
-		}
 	}
 
-	
-
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::SanitizeFloat(DamageAmount));
+	DisplayDamage(DamageAmount);
+	DamageAmount = 0.f;
 	// try and play the sound if specified
 	if (FireSound != NULL)
 	{
@@ -139,21 +150,24 @@ void AstarbreezeCharacter::OnFire()
 	}
 }
 
+
+
+
 void AstarbreezeCharacter::Instant_Fire()
 {
+	
 	const int32 RandomSeed = FMath::Rand();
 	FRandomStream WeaponRandomStream(RandomSeed);
-	const float CurrentSpread = WeaponSpread;
-	const float SpreadCone = FMath::DegreesToRadians(WeaponSpread *0.5);  // to take only half of the sphere we multiply it with 0.5
+	const float CurrentSpread = ShellCount;
+	const float SpreadCone = FMath::DegreesToRadians(WeaponSpread *ShellCount);  // to take only half of the sphere we multiply it with 0.5
 	const FVector AimDir = FP_MuzzleLocation->GetComponentRotation().Vector();
 	const FVector StartTrace = FP_MuzzleLocation->GetComponentLocation();
 	const FVector ShootDir = WeaponRandomStream.VRandCone(AimDir, SpreadCone);
 	const FVector EndTrace = StartTrace + ShootDir * WeaponRange;
 	const FHitResult Impact = WeaponTrace(StartTrace, EndTrace);
-
 	ProcessInstantHit(Impact, StartTrace, ShootDir, RandomSeed, CurrentSpread);
-	
 }
+
 
 FHitResult AstarbreezeCharacter::WeaponTrace(const FVector & TraceFrom, const FVector & TraceTo) const
 {
@@ -162,22 +176,74 @@ FHitResult AstarbreezeCharacter::WeaponTrace(const FVector & TraceFrom, const FV
 	TraceParams.bTraceAsyncScene = true;
 	TraceParams.bReturnPhysicalMaterial = true;
 	TraceParams.AddIgnoredActor(this);
-	
-
 	FHitResult Hit(ForceInit);  // To Reintialize every time 
 	GetWorld()->LineTraceSingleByChannel(Hit, TraceFrom, TraceTo, TRACE_WEAPON, TraceParams);
-	
-	
 	return Hit;
+
 }
 
 void AstarbreezeCharacter::ProcessInstantHit(const FHitResult & Impact, const FVector & Origin, const FVector & ShootDir, int32 RandomSeed, float ReticleSpread)
 {
+	
 	const FVector EndTrace = Origin + ShootDir * WeaponRange;
 	const FVector EndPoint = Impact.GetActor() ? Impact.ImpactPoint : EndTrace;
-	DrawDebugLine(this->GetWorld(), Origin, Impact.TraceEnd, FColor::Black, true, 10000, 10.f);
+	DrawDebugLine(this->GetWorld(), Origin, Impact.TraceEnd, FColor::Black, true, 0.25, 0.25);
+	DrawDebugPoint(this->GetWorld(), Impact.ImpactPoint,5, FColor::Red, false, 0.25);
+	
+	FVector Impulse;
+	if (Impact.bBlockingHit)
+	{	
+		
+		class AEnemy *HitEnemy = Cast<AEnemy>(Impact.Actor);
+		if (Impact.Component->IsSimulatingPhysics())
+		{
+			FVector dir = FVector(FP_MuzzleLocation->GetForwardVector());
+			Impact.Component->AddImpulse(ImpulseStrength* dir * Impact.Component->GetMass());
+
+		}
+		if (HitEnemy != nullptr)
+		{
+			if(HitEnemy->isDead == false )
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("DamageThreshold: %f"),Impact.PhysMaterial->DestructibleDamageThresholdScale));
+			DamageAmount = DamageAmount + Impact.PhysMaterial->DestructibleDamageThresholdScale;
+			HitEnemy->ApplDamageToEnemy(DamageAmount);
+			if (Impact.Component->IsSimulatingPhysics())
+			{
+				FVector dir = FVector(FP_MuzzleLocation->GetForwardVector());
+				Impact.Component->AddImpulse(ImpulseStrength* dir * Impact.Component->GetMass()*0.5);
+			}
+
+		}
+		
+	}
+}
+
+void AstarbreezeCharacter::UpdateScore()
+{
+	KillCount += 1;
+	DisplayScore(KillCount);
+}
+
+void AstarbreezeCharacter::UpdateHealth(float value)
+{
+	Health += value;
+	if (Health <= 0)
+	{
+		KillPlayer();
+	}
 
 }
+
+void AstarbreezeCharacter::KillPlayer()
+{
+	if(isDead ==false)
+	{
+
+	}
+}
+
+
+
 
 void AstarbreezeCharacter::OnResetVR()
 {

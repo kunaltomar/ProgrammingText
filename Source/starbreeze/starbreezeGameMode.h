@@ -13,6 +13,10 @@ class AstarbreezeGameMode : public AGameModeBase
 
 public:
 	AstarbreezeGameMode();
+
+	UFUNCTION(BlueprintCallable)
+		void StartGame();
+
 };
 
 

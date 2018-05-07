@@ -8,16 +8,6 @@
 
 #define TRACE_WEAPON ECC_GameTraceChannel1
 
-UENUM(BlueprintType)
-namespace EWeaponProjectile
-{
-	enum ProjectileType
-	{
-		EBullet			UMETA(DisplayName = "Bullet"),
-		ESpread			UMETA(DisplayName = "Spread"),											// Multiple types of bullet can be add further and firing mechanism can be customized
-	};
-}
-
 class UInputComponent;
 
 UCLASS(config=Game)
@@ -49,25 +39,38 @@ class AstarbreezeCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UMotionControllerComponent* L_MotionController;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Ammo)
-		int32 MaxAmmo;
+	UCharacterMovementComponent* MyCharacterMovement;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Config)
-		float TimeBetweenShots;
+	float DamageAmount;
+	bool isDead;
+	void KillPlayer();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Ammo)
-		int32 ShotCost;
+public:
+	
+	
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Config)
+	UPROPERTY(EditAnywhere, Category = WeaponConfig)
 		float WeaponRange;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Config)
+	UPROPERTY(EditAnywhere, Category = WeaponConfig)
+		float ShellCount;
+
+	UPROPERTY(EditAnywhere, Category = WeaponConfig)
 		float WeaponSpread;
 
-	UPROPERTY(EditDefaultsOnly, Category = Config)
-		TEnumAsByte<EWeaponProjectile::ProjectileType> Projectiletype;
-public:
-	AstarbreezeCharacter();
+	UPROPERTY(EditAnywhere, Category = WeaponConfig)
+		float ImpulseStrength;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+		int32 KillCount;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+		int32 Health;
+
+		AstarbreezeCharacter();
+
+		void UpdateScore();
+		void UpdateHealth(float value);
 
 protected:
 	virtual void BeginPlay();
@@ -101,11 +104,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	uint32 bUsingMotionControllers : 1;
 
+	UFUNCTION(BlueprintImplementableEvent, Category = Gameplay)
+	void DisplayDamage(float DamageAmount);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = Gameplay)
+		void DisplayScore(int32 score);
+
 protected:
 	
 	/** Fires a projectile. */
 	void OnFire();
 	void Instant_Fire();
+
 	/** Resets HMD orientation and position in VR. */
 	void OnResetVR();
 
