@@ -17,28 +17,49 @@ public:
 	bool isDead;
 
 
-	UPROPERTY(EditAnywhere, Category = Mesh)
+	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 		USkeletalMeshComponent* SK_Mesh;
 
-	UPROPERTY(EditAnywhere, Category = CapsuleComp)
+	UPROPERTY(VisibleDefaultsOnly, Category = CapsuleComp)
 		UCapsuleComponent* SK_CapsuleComp;
 	// Sets default values for this character's properties
 
+	//  AI  //
 	UPROPERTY(EditAnywhere, Category = AISystem)
 		class UBehaviorTree *EnemyBehaviour;
 
 	AEnemy();
 
-protected:
+	// GamePlay Variables
 	UPROPERTY(BlueprintReadOnly, Category = EnemyConfig)
 		float Health;
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-	void KillEnemy();
+
+	// GamePlay Events
+	UFUNCTION(BlueprintImplementableEvent, Category = "GamePlay")
+		void BPEventGotKilled();
+private:
+
+	// Damaging Player
+	bool bCanHitPlayer;
+	void HitCheck();
+
+	// DElay
+	FTimerHandle _DelayHandle;
 
 	UFUNCTION()
-	void HitPlayer(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult &SweepResult);
+	void OnDelayEnd();
 
+	// Check Collision with Player
+	UFUNCTION()
+	void OnHitPlayer(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	void KillEnemy();
+protected:
+
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+	
+		
 public:	
 	// Called every frame
 	void ApplDamageToEnemy(float);

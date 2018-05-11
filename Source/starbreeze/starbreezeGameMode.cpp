@@ -4,6 +4,7 @@
 #include "starbreezeHUD.h"
 #include "starbreezeCharacter.h"
 #include "Enemy.h"
+#include "Engine.h"
 #include "starbreezeCharacter.h"
 #include "Runtime/Engine/Classes/Engine/TargetPoint.h"
 #include "UObject/ConstructorHelpers.h"
@@ -19,9 +20,3 @@ AstarbreezeGameMode::AstarbreezeGameMode()
 	HUDClass = AstarbreezeHUD::StaticClass();
 }
 
-void AstarbreezeGameMode::StartGame()
-{
-	TArray<ATargetPoint*> TargetPoints;
-	UWorld* World = nullptr;
-	//for(TObjectArrayIterator<ATargetPoint*>)
-}

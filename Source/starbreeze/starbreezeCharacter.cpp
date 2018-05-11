@@ -61,14 +61,15 @@ AstarbreezeCharacter::AstarbreezeCharacter()
 	
 	//MyCharacterMovement = GetCharacterMovement();
 // 	MyCharacterMovement->CrouchedHalfHeight = CrouchingHeight;
-// 	
+
+	// 	Setting Up Default Velues for Variables
 	Health = 100;
 	KillCount = 0;
 
 	WeaponRange = 1000;
 	ShellCount = 8;
 	WeaponSpread = 0.5;
-	ImpulseStrength = 100;
+	ImpulseStrength = 50;
 	DamageAmount = 0.f;
 	isDead = false;
 }
@@ -130,7 +131,9 @@ void AstarbreezeCharacter::OnFire()
 	}
 
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::SanitizeFloat(DamageAmount));
-	DisplayDamage(DamageAmount);
+	if (DamageAmount > 0) {
+		DisplayDamage(DamageAmount);
+	}
 	DamageAmount = 0.f;
 	// try and play the sound if specified
 	if (FireSound != NULL)
@@ -187,7 +190,10 @@ void AstarbreezeCharacter::ProcessInstantHit(const FHitResult & Impact, const FV
 	
 	const FVector EndTrace = Origin + ShootDir * WeaponRange;
 	const FVector EndPoint = Impact.GetActor() ? Impact.ImpactPoint : EndTrace;
-	DrawDebugLine(this->GetWorld(), Origin, Impact.TraceEnd, FColor::Black, true, 0.25, 0.25);
+
+	// Showing debug for Bullet Spread and Impact location
+
+	DrawDebugLine(this->GetWorld(), Origin, Impact.TraceEnd, FColor::Black, true, 0.25, 0.25);			
 	DrawDebugPoint(this->GetWorld(), Impact.ImpactPoint,5, FColor::Red, false, 0.25);
 	
 	FVector Impulse;
@@ -221,12 +227,14 @@ void AstarbreezeCharacter::ProcessInstantHit(const FHitResult & Impact, const FV
 void AstarbreezeCharacter::UpdateScore()
 {
 	KillCount += 1;
-	DisplayScore(KillCount);
+	DisplayScore(WaveCount);
 }
 
 void AstarbreezeCharacter::UpdateHealth(float value)
 {
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Health Updated")));
 	Health += value;
+	UpdateHealthEvent(Health);
 	if (Health <= 0)
 	{
 		KillPlayer();
@@ -238,7 +246,7 @@ void AstarbreezeCharacter::KillPlayer()
 {
 	if(isDead ==false)
 	{
-
+		KillPlayerEvent();
 	}
 }
 

@@ -65,10 +65,14 @@ public:
 		int32 KillCount;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+		int32 WaveCount;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
 		int32 Health;
 
 		AstarbreezeCharacter();
 
+		// GamePlay Functions
 		void UpdateScore();
 		void UpdateHealth(float value);
 
@@ -107,8 +111,17 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = Gameplay)
 	void DisplayDamage(float DamageAmount);
 
+
+	// Blueprint Callable Gameplay Events
+
 	UFUNCTION(BlueprintImplementableEvent, Category = Gameplay)
-		void DisplayScore(int32 score);
+	void DisplayScore(int32 score);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = Gameplay)
+	void KillPlayerEvent();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = Gameplay)
+	void UpdateHealthEvent(int32 value);
 
 protected:
 	
